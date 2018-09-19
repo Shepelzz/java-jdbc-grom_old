@@ -17,11 +17,11 @@ public class JDBC_Examples {
 //            boolean res1 = statement.execute("DELETE FROM PRODUCT WHERE ID = 2");
 //            System.out.println(res1);
 
-//            int res = statement.executeUpdate("INSERT INTO PRODUCT VALUES(5, 'toy', 'for children', 150)");
-//            System.out.println(res);
+            int res = statement.executeUpdate("INSERT INTO PRODUCT VALUES(2, 'toy2', 'for children', 150)");
+            System.out.println(res);
 
-            int res1 = statement.executeUpdate("DELETE FROM PRODUCT WHERE NAME = 'dfg'");
-            System.out.println(res1);
+//            int res1 = statement.executeUpdate("DELETE FROM PRODUCT WHERE NAME = 'dfg'");
+//            System.out.println(res1);
 
 
         }catch (SQLException e){
