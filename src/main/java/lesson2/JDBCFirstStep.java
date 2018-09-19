@@ -1,3 +1,5 @@
+package lesson2;
+
 import java.sql.*;
 
 public class JDBCFirstStep {
@@ -9,29 +11,29 @@ public class JDBCFirstStep {
     private static final String USER = "main";
     private static final String PASS = "11111111";
 
+    static {
+        try{
+            Class.forName(JDBC_DRIVER);
+        }catch (ClassNotFoundException e){
+            System.err.println("Class "+JDBC_DRIVER+" not found");
+        }
+    }
+
     public static void main(String[] args) {
         try(Connection connection = DriverManager.getConnection(DB_URL, USER, PASS); Statement statement = connection.createStatement()){
-            //1. DB driver
-            //2. Create connection
-            //3. Create query
-            //4. Execute query
-            //5. Work with result
-            //6. Close all connections
-
-            try{
-                Class.forName(JDBC_DRIVER);
-            }catch (ClassNotFoundException e){
-                System.out.println("Class "+JDBC_DRIVER+" not found");
-                return;
-            }
-
-            try(ResultSet resultSet = statement.executeQuery("SELECT * FROM TEST")){
+            try(ResultSet resultSet = statement.executeQuery("SELECT * FROM ORDERS WHERE PRICE > 4000 ")){
                 while(resultSet.next()){
-                    System.out.println("Object found");
+                    long id = resultSet.getLong(1);
+                    String productName = resultSet.getString(2);
+                    int price = resultSet.getInt(3);
+                    Date dateOrdered = resultSet.getDate(4);
+                    Date dateConfirmed = resultSet.getDate(5);
+                    Order order = new Order(id, productName, price, dateOrdered, dateConfirmed);
+                    System.out.println(order.toString());
                 }
             }
         }catch (SQLException e){
-            System.out.println("Something went wrong");
+            System.err.println("Something went wrong");
             e.printStackTrace();
         }
     }
