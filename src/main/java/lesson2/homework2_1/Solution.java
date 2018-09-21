@@ -1,6 +1,7 @@
 package lesson2.homework2_1;
 
 import java.sql.*;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 public class Solution {
@@ -9,7 +10,7 @@ public class Solution {
     private static final String PASS = "11111111";
 
     public static Set<Product> getAllProducts(){
-        Set<Product> result = null;
+        Set<Product> result = new LinkedHashSet<>();
         try(Connection connection = DriverManager.getConnection(DB_URL, USER, PASS); Statement statement = connection.createStatement()){
             try(ResultSet resultSet = statement.executeQuery("SELECT * FROM PRODUCT")){
                 while(resultSet.next()){
@@ -24,7 +25,7 @@ public class Solution {
     }
 
     public static Set<Product> getProductsByPrice(){
-        Set<Product> result = null;
+        Set<Product> result = new LinkedHashSet<>();
         try(Connection connection = DriverManager.getConnection(DB_URL, USER, PASS); Statement statement = connection.createStatement()){
             try(ResultSet resultSet = statement.executeQuery("SELECT * FROM PRODUCT WHERE PRICE <= 100")){
                 while(resultSet.next()){
@@ -39,7 +40,7 @@ public class Solution {
     }
 
     public static Set<Product> getProductsByDescription(){
-        Set<Product> result = null;
+        Set<Product> result = new LinkedHashSet<>();
         try(Connection connection = DriverManager.getConnection(DB_URL, USER, PASS); Statement statement = connection.createStatement()){
             try(ResultSet resultSet = statement.executeQuery("SELECT * FROM PRODUCT WHERE LENGTH(DESCRIPTION) > 50")){
                 while(resultSet.next()){
