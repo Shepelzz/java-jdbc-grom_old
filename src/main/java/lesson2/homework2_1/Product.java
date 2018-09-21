@@ -5,10 +5,10 @@ import java.sql.Clob;
 public class Product {
     private long id;
     private String name;
-    private Clob description;
+    private String description;
     private int price;
 
-    public Product(long id, String name, Clob description, int price) {
+    public Product(long id, String name, String description, int price) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -23,7 +23,7 @@ public class Product {
         return name;
     }
 
-    public Clob getDescription() {
+    public String getDescription() {
         return description;
     }
 

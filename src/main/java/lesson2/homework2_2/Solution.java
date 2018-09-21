@@ -11,8 +11,10 @@ public class Solution {
     private static final String PASS = "11111111";
 
     public static void increasePrice(){
-        try(Connection connection = DriverManager.getConnection(DB_URL, USER, PASS); Statement statement = connection.createStatement()){
-            statement.executeUpdate("UPDATE PRODUCT SET PRICE = PRICE+100 WHERE PRICE < 970");
+        final String query = "UPDATE PRODUCT SET PRICE = PRICE+100 WHERE PRICE < 970";
+        try(Connection connection = getConnection();
+                Statement statement = connection.createStatement()){
+            statement.executeUpdate(query);
         }catch (SQLException e){
             System.err.println("Something went wrong");
             e.printStackTrace();
@@ -20,11 +22,17 @@ public class Solution {
     }
 
     public static void changeDescription(){
-        try(Connection connection = DriverManager.getConnection(DB_URL, USER, PASS); Statement statement = connection.createStatement()){
-            statement.executeUpdate("UPDATE PRODUCT SET DESCRIPTION = SUBSTR(DESCRIPTION, 1, INSTR(DESCRIPTION,' ',-1)-1) WHERE LENGTH(DESCRIPTION) > 100");
+        final String query = "UPDATE PRODUCT SET DESCRIPTION = SUBSTR(DESCRIPTION, 1, INSTR(DESCRIPTION,'.',-1)-1) WHERE LENGTH(DESCRIPTION) > 100";
+        try(Connection connection = getConnection();
+                Statement statement = connection.createStatement()){
+            statement.executeUpdate(query);
         }catch (SQLException e){
             System.err.println("Something went wrong");
             e.printStackTrace();
         }
+    }
+
+    private static Connection getConnection() throws SQLException{
+        return DriverManager.getConnection(DB_URL, USER, PASS);
     }
 }

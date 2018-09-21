@@ -10,15 +10,16 @@ public class Solution {
     private static final String PASS = "11111111";
 
     public List<Product> findProductsByPrice(int price, int delta){
+        final String query = "SELECT * FROM PRODUCT WHERE PRICE BETWEEN ? AND ?";
         try(Connection connection = getConnection();
-                PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM PRODUCT WHERE PRICE BETWEEN ? AND ?")){
+                PreparedStatement preparedStatement = connection.prepareStatement(query)){
             preparedStatement.setInt(1, price-delta);
             preparedStatement.setInt(2, price+delta);
 
             ResultSet rs = preparedStatement.executeQuery();
             List<Product> products = new ArrayList<>();
             while(rs.next()){
-                products.add(new Product(rs.getLong(1), rs.getString(2), rs.getString(3), rs.getInt(4)));
+                products.add(getProductFromResultSet(rs));
             }
             return products;
         }catch (SQLException e){
@@ -29,14 +30,15 @@ public class Solution {
     }
 
     public List<Product> findProductsByName(String word){
+        final String query = "SELECT * FROM PRODUCT WHERE NAME LIKE ?";
         try(Connection connection = getConnection();
-            PreparedStatement preparedStatement = connection.prepareStatement("SELECT * FROM PRODUCT WHERE NAME LIKE ?")){
+                PreparedStatement preparedStatement = connection.prepareStatement(query)){
             preparedStatement.setString(1, "%"+word+"%");
 
             ResultSet rs = preparedStatement.executeQuery();
             List<Product> products = new ArrayList<>();
             while(rs.next()){
-                products.add(new Product(rs.getLong(1), rs.getString(2), rs.getString(3), rs.getInt(4)));
+                products.add(getProductFromResultSet(rs));
             }
             return products;
         }catch (SQLException e){
@@ -47,13 +49,13 @@ public class Solution {
     }
 
     public List<Product> findProductsWithEmptyDescription(){
+        final String query = "SELECT * FROM PRODUCT WHERE DESCRIPTION IS NULL";
         try(Connection connection = getConnection();
-            Statement statement = connection.createStatement()){
-
-            ResultSet rs = statement.executeQuery("SELECT * FROM PRODUCT WHERE DESCRIPTION IS NULL");
+                Statement statement = connection.createStatement()){
             List<Product> products = new ArrayList<>();
+            ResultSet rs = statement.executeQuery(query);
             while(rs.next()){
-                products.add(new Product(rs.getLong(1), rs.getString(2), rs.getString(3), rs.getInt(4)));
+                products.add(getProductFromResultSet(rs));
             }
             return products;
         }catch (SQLException e){
@@ -65,5 +67,13 @@ public class Solution {
 
     private Connection getConnection() throws SQLException{
         return DriverManager.getConnection(DB_URL, USER, PASS);
+    }
+
+    private Product getProductFromResultSet(ResultSet resultSet) throws SQLException {
+        long id = resultSet.getLong(1);
+        String name = resultSet.getString(2);
+        String description = resultSet.getString(3);
+        int price = resultSet.getInt(4);
+        return new Product(id, name, description, price);
     }
 }
