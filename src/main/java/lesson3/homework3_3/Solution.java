@@ -8,21 +8,33 @@ public class Solution {
     private static final String DB_URL = "jdbc:oracle:thin:@gromcode-lessons.ce5xbsungqgk.us-east-2.rds.amazonaws.com:1521:ORCL";
     private static final String USER = "main";
     private static final String PASS = "11111111";
+    private static final String SQL_TEST_SAVE_PERFORMANCE =
+            "INSERT INTO TEST_SPEED VALUES(?, ?, ?)";
+    private static final String SQL_TEST_DELETE_BY_ID_PERFORMANCE =
+            "DELETE FROM TEST_SPEED "+
+            "WHERE ID = ?";
+    private static final String SQL_TEST_DELETE_PERFORMANCE =
+            "DELETE FROM TEST_SPEED "+
+            "WHERE ID <= 1000";
+    private static final String SQL_TEST_SELECT_BY_ID_PERFORMANCE =
+            "SELECT * "+
+            "FROM TEST_SPEED "+
+            "WHERE ID = ?";
+    private static final String SQL_TEST_SELECT_PERFORMANCE =
+            "SELECT * "+
+            "FROM TEST_SPEED "+
+            "WHERE ID <= 1000";
 
     public void testSavePerformance(){
         //result: 125919
-        final String query = "INSERT INTO TEST_SPEED VALUES(?, ?, ?)";
-
         Date start = new Date(), finish;
         long timeDiff;
-        try(Connection connection = getConnection();
-                PreparedStatement preparedStatement = connection.prepareStatement(query)){
-
+        try(Connection conn = getConnection(); PreparedStatement prpStmt = conn.prepareStatement(SQL_TEST_SAVE_PERFORMANCE)){
             for(int i = 1; i <= 1000; i++){
-                preparedStatement.setInt(1, i);
-                preparedStatement.setString(2, "test_"+i);
-                preparedStatement.setInt(3, ThreadLocalRandom.current().nextInt(Integer.MAX_VALUE));
-                preparedStatement.executeUpdate();
+                prpStmt.setInt(1, i);
+                prpStmt.setString(2, "test_"+i);
+                prpStmt.setInt(3, ThreadLocalRandom.current().nextInt(Integer.MAX_VALUE));
+                prpStmt.executeUpdate();
             }
         }catch (SQLException e){
             System.err.println("Something went wrong");
@@ -35,16 +47,12 @@ public class Solution {
 
     public void testDeleteByIdPerformance(){
         //result: 125624
-        final String query = "DELETE FROM TEST_SPEED WHERE ID = ?";
-
         Date start = new Date(), finish;
         long timeDiff;
-        try(Connection connection = getConnection();
-                PreparedStatement preparedStatement = connection.prepareStatement(query)){
-
+        try(Connection conn = getConnection(); PreparedStatement prpStmt = conn.prepareStatement(SQL_TEST_DELETE_BY_ID_PERFORMANCE)){
             for(int i = 1; i <= 1000; i++){
-                preparedStatement.setInt(1, i);
-                preparedStatement.executeUpdate();
+                prpStmt.setInt(1, i);
+                prpStmt.executeUpdate();
             }
         }catch (SQLException e){
             System.err.println("Something went wrong");
@@ -57,14 +65,10 @@ public class Solution {
 
     public void testDeletePerformance(){
         //result: 2145
-        final String query = "DELETE FROM TEST_SPEED WHERE ID <= 1000";
-
         Date start = new Date(), finish;
         long timeDiff;
-        try(Connection connection = getConnection();
-                Statement statement = connection.createStatement()){
-
-            statement.executeUpdate(query);
+        try(Connection conn = getConnection(); Statement stmt = conn.createStatement()){
+            stmt.executeUpdate(SQL_TEST_DELETE_PERFORMANCE);
         }catch (SQLException e){
             System.err.println("Something went wrong");
             e.printStackTrace();
@@ -76,16 +80,12 @@ public class Solution {
 
     public void testSelectByIdPerformance(){
         //result: 124387
-        final String query = "SELECT * FROM TEST_SPEED WHERE ID = ?";
-
         Date start = new Date(), finish;
         long timeDiff;
-        try(Connection connection = getConnection();
-                PreparedStatement preparedStatement = connection.prepareStatement(query)){
-
+        try(Connection conn = getConnection(); PreparedStatement prpStmt = conn.prepareStatement(SQL_TEST_SELECT_BY_ID_PERFORMANCE)){
             for(int i = 1; i <= 1000; i++){
-                preparedStatement.setInt(1, i);
-                ResultSet rs = preparedStatement.executeQuery();
+                prpStmt.setInt(1, i);
+                ResultSet rs = prpStmt.executeQuery();
             }
         }catch (SQLException e){
             System.err.println("Something went wrong");
@@ -98,14 +98,10 @@ public class Solution {
 
     public void testSelectPerformance(){
         //result: 2201
-        final String query = "SELECT * FROM TEST_SPEED WHERE ID <= 1000";
-
         Date start = new Date(), finish;
         long timeDiff;
-        try(Connection connection = getConnection();
-                Statement statement = connection.createStatement()){
-
-            ResultSet resultSet = statement.executeQuery(query);
+        try(Connection conn = getConnection(); Statement stmt = conn.createStatement()){
+            ResultSet resultSet = stmt.executeQuery(SQL_TEST_SELECT_PERFORMANCE);
         }catch (SQLException e){
             System.err.println("Something went wrong");
             e.printStackTrace();

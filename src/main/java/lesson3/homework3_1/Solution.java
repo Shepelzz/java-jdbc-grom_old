@@ -8,16 +8,26 @@ public class Solution {
     private static final String DB_URL = "jdbc:oracle:thin:@gromcode-lessons.ce5xbsungqgk.us-east-2.rds.amazonaws.com:1521:ORCL";
     private static final String USER = "main";
     private static final String PASS = "11111111";
+    private static final String SQL_FIND_PRODUCT_BY_PRICE =
+            "SELECT * "+
+            "FROM PRODUCT "+
+            "WHERE PRICE BETWEEN ? AND ?";
+    private static final String SQL_FIND_PRODUCT_BY_NAME =
+            "SELECT * "+
+            "FROM PRODUCT "+
+            "WHERE NAME LIKE ?";
+    private static final String SQL_FIND_PRODUCTS_WITH_EMPTY_DESCRIPTION =
+            "SELECT * "+
+            "FROM PRODUCT "+
+            "WHERE DESCRIPTION IS NULL";
 
     public List<Product> findProductsByPrice(int price, int delta){
-        final String query = "SELECT * FROM PRODUCT WHERE PRICE BETWEEN ? AND ?";
-        try(Connection connection = getConnection();
-                PreparedStatement preparedStatement = connection.prepareStatement(query)){
-            preparedStatement.setInt(1, price-delta);
-            preparedStatement.setInt(2, price+delta);
+        try(Connection conn = getConnection(); PreparedStatement prpStmt = conn.prepareStatement(SQL_FIND_PRODUCT_BY_PRICE)){
+            prpStmt.setInt(1, price-delta);
+            prpStmt.setInt(2, price+delta);
 
-            ResultSet rs = preparedStatement.executeQuery();
             List<Product> products = new ArrayList<>();
+            ResultSet rs = prpStmt.executeQuery();
             while(rs.next()){
                 products.add(getProductFromResultSet(rs));
             }
@@ -30,13 +40,11 @@ public class Solution {
     }
 
     public List<Product> findProductsByName(String word){
-        final String query = "SELECT * FROM PRODUCT WHERE NAME LIKE ?";
-        try(Connection connection = getConnection();
-                PreparedStatement preparedStatement = connection.prepareStatement(query)){
-            preparedStatement.setString(1, "%"+word+"%");
+        try(Connection conn = getConnection(); PreparedStatement prpStmt = conn.prepareStatement(SQL_FIND_PRODUCT_BY_NAME)){
+            prpStmt.setString(1, "%"+word+"%");
 
-            ResultSet rs = preparedStatement.executeQuery();
             List<Product> products = new ArrayList<>();
+            ResultSet rs = prpStmt.executeQuery();
             while(rs.next()){
                 products.add(getProductFromResultSet(rs));
             }
@@ -49,11 +57,9 @@ public class Solution {
     }
 
     public List<Product> findProductsWithEmptyDescription(){
-        final String query = "SELECT * FROM PRODUCT WHERE DESCRIPTION IS NULL";
-        try(Connection connection = getConnection();
-                Statement statement = connection.createStatement()){
+        try(Connection conn = getConnection(); Statement stmt = conn.createStatement()){
             List<Product> products = new ArrayList<>();
-            ResultSet rs = statement.executeQuery(query);
+            ResultSet rs = stmt.executeQuery(SQL_FIND_PRODUCTS_WITH_EMPTY_DESCRIPTION);
             while(rs.next()){
                 products.add(getProductFromResultSet(rs));
             }
