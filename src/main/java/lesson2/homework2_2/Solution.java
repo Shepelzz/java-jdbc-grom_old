@@ -9,12 +9,19 @@ public class Solution {
     private static final String DB_URL = "jdbc:oracle:thin:@gromcode-lessons.ce5xbsungqgk.us-east-2.rds.amazonaws.com:1521:ORCL";
     private static final String USER = "main";
     private static final String PASS = "11111111";
+    private static final String SQL_INCREASE_PRICE =
+            "UPDATE PRODUCT "+
+            "SET PRICE = PRICE+100 "+
+            "WHERE PRICE < 970";
+    private static final String SQL_CHANGE_DESCRIPTION =
+            "UPDATE PRODUCT "+
+            "SET DESCRIPTION = SUBSTR(DESCRIPTION, 1, INSTR(DESCRIPTION,'.',-1)-1) "+
+            "WHERE LENGTH(DESCRIPTION) > 100";
+
 
     public static void increasePrice(){
-        final String query = "UPDATE PRODUCT SET PRICE = PRICE+100 WHERE PRICE < 970";
-        try(Connection connection = getConnection();
-                Statement statement = connection.createStatement()){
-            statement.executeUpdate(query);
+        try(Connection conn = getConnection(); Statement stmt = conn.createStatement()){
+            stmt.executeUpdate(SQL_INCREASE_PRICE);
         }catch (SQLException e){
             System.err.println("Something went wrong");
             e.printStackTrace();
@@ -22,10 +29,8 @@ public class Solution {
     }
 
     public static void changeDescription(){
-        final String query = "UPDATE PRODUCT SET DESCRIPTION = SUBSTR(DESCRIPTION, 1, INSTR(DESCRIPTION,'.',-1)-1) WHERE LENGTH(DESCRIPTION) > 100";
-        try(Connection connection = getConnection();
-                Statement statement = connection.createStatement()){
-            statement.executeUpdate(query);
+        try(Connection conn = getConnection(); Statement stmt = conn.createStatement()){
+            stmt.executeUpdate(SQL_CHANGE_DESCRIPTION);
         }catch (SQLException e){
             System.err.println("Something went wrong");
             e.printStackTrace();

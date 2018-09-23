@@ -10,13 +10,20 @@ public class Solution {
     private static final String DB_URL = "jdbc:oracle:thin:@gromcode-lessons.ce5xbsungqgk.us-east-2.rds.amazonaws.com:1521:ORCL";
     private static final String USER = "main";
     private static final String PASS = "11111111";
+    private static final String SQL_GET_ALL_PRODUCTS = "SELECT * FROM PRODUCT";
+    private static final String SQL_GET_PRODUCTS_BY_PRICE =
+            "SELECT * "+
+            "FROM PRODUCT "+
+            "WHERE PRICE <= 100";
+    private static final String SQL_GET_PRODUCTS_BY_DESCRIPTION =
+            "SELECT * "+
+            "FROM PRODUCT "+
+            "WHERE LENGTH(DESCRIPTION) > 50";
 
     public static List<Product> getAllProducts(){
-        final String query = "SELECT * FROM PRODUCT";
-        try(Connection connection = getConnection();
-                Statement statement = connection.createStatement()){
+        try(Connection conn = getConnection(); Statement stmt = conn.createStatement()){
             List<Product> result = new ArrayList<>();
-            ResultSet resultSet = statement.executeQuery(query);
+            ResultSet resultSet = stmt.executeQuery(SQL_GET_ALL_PRODUCTS);
             while(resultSet.next()){
                 result.add(getProductFromResultSet(resultSet));
             }
@@ -29,11 +36,9 @@ public class Solution {
     }
 
     public static List<Product> getProductsByPrice(){
-        final String query = "SELECT * FROM PRODUCT WHERE PRICE <= 100";
-        try(Connection connection = getConnection();
-                Statement statement = connection.createStatement()){
+        try(Connection conn = getConnection(); Statement stmt = conn.createStatement()){
             List<Product> result = new ArrayList<>();
-            ResultSet resultSet = statement.executeQuery(query);
+            ResultSet resultSet = stmt.executeQuery(SQL_GET_PRODUCTS_BY_PRICE);
             while(resultSet.next()){
                 result.add(getProductFromResultSet(resultSet));
             }
@@ -46,11 +51,9 @@ public class Solution {
     }
 
     public static List<Product> getProductsByDescription(){
-        final String query = "SELECT * FROM PRODUCT WHERE LENGTH(DESCRIPTION) > 50";
-        try(Connection connection = getConnection();
-                Statement statement = connection.createStatement()){
+        try(Connection conn = getConnection(); Statement stmt = conn.createStatement()){
             List<Product> result = new ArrayList<>();
-            ResultSet resultSet = statement.executeQuery(query);
+            ResultSet resultSet = stmt.executeQuery(SQL_GET_PRODUCTS_BY_DESCRIPTION);
             while(resultSet.next()) {
                 result.add(getProductFromResultSet(resultSet));
             }
