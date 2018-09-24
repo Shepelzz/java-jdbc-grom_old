@@ -21,8 +21,7 @@ public class Solution {
 
     public static void increasePrice(){
         try(Connection conn = getConnection(); Statement stmt = conn.createStatement()){
-            int res = stmt.executeUpdate(SQL_INCREASE_PRICE);
-            System.out.println(res+" row"+(res==1?"":"s")+" updated.");
+            showResultMessage(stmt.executeUpdate(SQL_INCREASE_PRICE));
         }catch (SQLException e){
             System.err.println("Something went wrong");
             e.printStackTrace();
@@ -31,8 +30,7 @@ public class Solution {
 
     public static void changeDescription(){
         try(Connection conn = getConnection(); Statement stmt = conn.createStatement()){
-            int res = stmt.executeUpdate(SQL_CHANGE_DESCRIPTION);
-            System.out.println(res+" row"+(res==1?"":"s")+" updated.");
+            showResultMessage(stmt.executeUpdate(SQL_CHANGE_DESCRIPTION));
         }catch (SQLException e){
             System.err.println("Something went wrong");
             e.printStackTrace();
@@ -41,5 +39,9 @@ public class Solution {
 
     private static Connection getConnection() throws SQLException{
         return DriverManager.getConnection(DB_URL, USER, PASS);
+    }
+
+    private static void showResultMessage(int rows){
+        System.out.println(rows+" row"+(rows==1?"":"s")+" updated.");
     }
 }
