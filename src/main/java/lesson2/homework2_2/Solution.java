@@ -14,10 +14,8 @@ public class Solution {
 
     public static void increasePrice() throws Exception{
         try(Connection conn = getConnection(); Statement stmt = conn.createStatement()){
-            int res = stmt.executeUpdate(SQL_INCREASE_PRICE);
-            if(res == 0){
+            if(stmt.executeUpdate(SQL_INCREASE_PRICE) == 0)
                 throw new Exception("no rows was updated");
-            }
         }catch (SQLException e){
             System.err.println("Something went wrong");
             throw new SQLException(e);
@@ -26,10 +24,8 @@ public class Solution {
 
     public static void changeDescription() throws Exception{
         try(Connection conn = getConnection(); Statement stmt = conn.createStatement()){
-            int res = stmt.executeUpdate(SQL_CHANGE_DESCRIPTION);
-            if(res == 0){
+            if(stmt.executeUpdate(SQL_CHANGE_DESCRIPTION) == 0)
                 throw new Exception("no rows was updated");
-            }
         }catch (SQLException e){
             System.err.println("Something went wrong");
             throw new SQLException(e);

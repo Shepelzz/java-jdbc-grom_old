@@ -8,20 +8,11 @@ public class Solution {
     private static final String DB_URL = "jdbc:oracle:thin:@gromcode-lessons.ce5xbsungqgk.us-east-2.rds.amazonaws.com:1521:ORCL";
     private static final String USER = "main";
     private static final String PASS = "11111111";
-    private static final String SQL_FIND_PRODUCT_BY_PRICE =
-            "SELECT * "+
-            "FROM PRODUCT "+
-            "WHERE PRICE BETWEEN ? AND ?";
-    private static final String SQL_FIND_PRODUCT_BY_NAME =
-            "SELECT * "+
-            "FROM PRODUCT "+
-            "WHERE NAME LIKE ?";
-    private static final String SQL_FIND_PRODUCTS_WITH_EMPTY_DESCRIPTION =
-            "SELECT * "+
-            "FROM PRODUCT "+
-            "WHERE DESCRIPTION IS NULL";
+    private static final String SQL_FIND_PRODUCT_BY_PRICE = "SELECT * FROM PRODUCT WHERE PRICE BETWEEN ? AND ?";
+    private static final String SQL_FIND_PRODUCT_BY_NAME = "SELECT * FROM PRODUCT WHERE NAME LIKE ?";
+    private static final String SQL_FIND_PRODUCTS_WITH_EMPTY_DESCRIPTION = "SELECT * FROM PRODUCT WHERE DESCRIPTION IS NULL";
 
-    public List<Product> findProductsByPrice(int price, int delta){
+    public List<Product> findProductsByPrice(int price, int delta) throws SQLException{
         try(Connection conn = getConnection(); PreparedStatement prpStmt = conn.prepareStatement(SQL_FIND_PRODUCT_BY_PRICE)){
             prpStmt.setInt(1, price-delta);
             prpStmt.setInt(2, price+delta);
@@ -34,12 +25,11 @@ public class Solution {
             return products;
         }catch (SQLException e){
             System.err.println("Something went wrong");
-            e.printStackTrace();
+            throw new SQLException(e);
         }
-        return null;
     }
 
-    public List<Product> findProductsByName(String word){
+    public List<Product> findProductsByName(String word) throws SQLException{
         try(Connection conn = getConnection(); PreparedStatement prpStmt = conn.prepareStatement(SQL_FIND_PRODUCT_BY_NAME)){
             prpStmt.setString(1, "%"+word+"%");
 
@@ -51,12 +41,11 @@ public class Solution {
             return products;
         }catch (SQLException e){
             System.err.println("Something went wrong");
-            e.printStackTrace();
+            throw new SQLException(e);
         }
-        return null;
     }
 
-    public List<Product> findProductsWithEmptyDescription(){
+    public List<Product> findProductsWithEmptyDescription() throws SQLException{
         try(Connection conn = getConnection(); Statement stmt = conn.createStatement()){
             List<Product> products = new ArrayList<>();
             ResultSet rs = stmt.executeQuery(SQL_FIND_PRODUCTS_WITH_EMPTY_DESCRIPTION);
@@ -66,9 +55,8 @@ public class Solution {
             return products;
         }catch (SQLException e){
             System.err.println("Something went wrong");
-            e.printStackTrace();
+            throw new SQLException(e);
         }
-        return null;
     }
 
     private Connection getConnection() throws SQLException{
