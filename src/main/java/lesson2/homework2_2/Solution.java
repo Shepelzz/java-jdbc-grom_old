@@ -21,7 +21,8 @@ public class Solution {
 
     public static void increasePrice(){
         try(Connection conn = getConnection(); Statement stmt = conn.createStatement()){
-            stmt.executeUpdate(SQL_INCREASE_PRICE);
+            int res = stmt.executeUpdate(SQL_INCREASE_PRICE);
+            System.out.println(res+" row"+(res==1?"":"s")+" updated.");
         }catch (SQLException e){
             System.err.println("Something went wrong");
             e.printStackTrace();
@@ -30,7 +31,8 @@ public class Solution {
 
     public static void changeDescription(){
         try(Connection conn = getConnection(); Statement stmt = conn.createStatement()){
-            stmt.executeUpdate(SQL_CHANGE_DESCRIPTION);
+            int res = stmt.executeUpdate(SQL_CHANGE_DESCRIPTION);
+            System.out.println(res+" row"+(res==1?"":"s")+" updated.");
         }catch (SQLException e){
             System.err.println("Something went wrong");
             e.printStackTrace();
