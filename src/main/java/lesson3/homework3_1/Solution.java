@@ -25,7 +25,7 @@ public class Solution {
             return products;
         }catch (SQLException e){
             System.err.println("Something went wrong");
-            throw new SQLException(e);
+            throw e;
         }
     }
 
@@ -41,7 +41,7 @@ public class Solution {
             return products;
         }catch (SQLException e){
             System.err.println("Something went wrong");
-            throw new SQLException(e);
+            throw e;
         }
     }
 
@@ -55,7 +55,7 @@ public class Solution {
             return products;
         }catch (SQLException e){
             System.err.println("Something went wrong");
-            throw new SQLException(e);
+            throw e;
         }
     }
 

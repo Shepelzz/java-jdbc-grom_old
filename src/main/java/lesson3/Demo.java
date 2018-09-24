@@ -1,7 +1,7 @@
 package lesson3;
 
 public class Demo {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception{
         ProductDAO productDAO = new ProductDAO();
         Product product = new Product(12,"newProd12", "some description", 90);
         //productDAO.save(product);
