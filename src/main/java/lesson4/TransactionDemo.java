@@ -6,7 +6,6 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class TransactionDemo {
@@ -15,24 +14,10 @@ public class TransactionDemo {
     private static final String PASS = "11111111";
     private static final String SQL_SAVE = "INSERT INTO PRODUCT VALUES(?, ?, ?, ?)";
 
-    public static void main(String[] args) throws Exception{
-        Product product1 = new Product(55, "name1", "test", 90);
-        Product product2 = new Product(66, "name2", "test1", 940);
-        Product product3 = new Product(66, "name3", "test232", 978);
-
-        List<Product> products = new ArrayList<>();
-        products.add(product1);
-        products.add(product2);
-        products.add(product3);
-
-        save(products);
-    }
-
     public static void save(List<Product> products) throws Exception{
         try(Connection conn = getConnection()){
             saveList(products, conn);
-        }catch (SQLException e){
-            System.err.println("Something went wrong");
+        }catch (Exception e){
             throw e;
         }
     }
@@ -47,13 +32,16 @@ public class TransactionDemo {
                 prpStmt.setString(3, product.getDescription());
                 prpStmt.setInt(4, product.getPrice());
 
-                if (prpStmt.executeUpdate() == 0)
-                    throw new Exception("product with id " + product.getId() + " was not saved");
+                try {
+                    prpStmt.executeUpdate();
+                }catch (Exception e) {
+                    throw new Exception("product with id " + product.getId() + " was not saved. "+e.getMessage());
+                }
                 System.out.println("product "+product.toString()+" was saved");
             }
 
             connection.commit();
-        }catch (SQLException e){
+        }catch (Exception e){
             connection.rollback();
             throw e;
         }

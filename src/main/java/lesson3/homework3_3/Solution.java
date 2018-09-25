@@ -28,7 +28,7 @@ public class Solution {
             }
         }catch (SQLException e){
             System.err.println("something went wrong");
-            throw new SQLException(e);
+            throw e;
         }
         finish = new Date();
         timeDiff = finish.getTime()-start.getTime();
@@ -47,7 +47,7 @@ public class Solution {
             }
         }catch (SQLException e){
             System.err.println("something went wrong");
-            throw new SQLException(e);
+            throw e;
         }
         finish = new Date();
         timeDiff = finish.getTime()-start.getTime();
@@ -63,7 +63,7 @@ public class Solution {
                 throw new Exception("no rows was updated");
         }catch (SQLException e){
             System.err.println("something went wrong");
-            throw new SQLException(e);
+            throw e;
         }
         finish = new Date();
         timeDiff = finish.getTime()-start.getTime();
@@ -81,7 +81,7 @@ public class Solution {
             }
         }catch (SQLException e){
             System.err.println("something went wrong");
-            throw new SQLException(e);
+            throw e;
         }
         finish = new Date();
         timeDiff = finish.getTime()-start.getTime();
@@ -96,7 +96,7 @@ public class Solution {
             ResultSet resultSet = stmt.executeQuery(SQL_TEST_SELECT_PERFORMANCE);
         }catch (SQLException e){
             System.err.println("something went wrong");
-            throw new SQLException(e);
+            throw e;
         }
         finish = new Date();
         timeDiff = finish.getTime()-start.getTime();
