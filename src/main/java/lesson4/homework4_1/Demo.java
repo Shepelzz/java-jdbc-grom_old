@@ -1,8 +1,12 @@
 package lesson4.homework4_1;
 
+import lesson4.homework4_1.controller.Controller;
 import lesson4.homework4_1.dao.FileDAO;
+import lesson4.homework4_1.dao.StorageDAO;
 import lesson4.homework4_1.model.File;
 import lesson4.homework4_1.model.Storage;
+
+import java.util.Arrays;
 
 public class Demo {
     public static void main(String[] args) {
@@ -26,6 +30,12 @@ public class Demo {
             //System.out.println(fileDAO.findById(10).getName());
             //fileDAO.update(file);
             //fileDAO.delete(10);
+
+            StorageDAO storageDAO = new StorageDAO();
+            Controller controller = new Controller();
+            controller.transferAll(storageDAO.findById(2), storageDAO.findById(1));
+
+
         }catch (Exception e){
             e.getMessage();
             e.printStackTrace();

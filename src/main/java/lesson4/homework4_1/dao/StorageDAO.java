@@ -18,7 +18,7 @@ public class StorageDAO extends GeneralDAO{
     private static final String SQL_GET_FREE_SPACE = "SELECT SUM(FILE_SIZE) FROM FILES WHERE STORAGE_ID = ?";
 
     public Storage save(Storage storage) throws Exception{
-        try(Connection conn = getConnection(); PreparedStatement prpStmt = conn.prepareStatement(SQL_SAVE)){
+        try(Connection conn = createConnection(); PreparedStatement prpStmt = conn.prepareStatement(SQL_SAVE)){
             storage.setId(getNewEntityId(SQL_GET_ID));
 
             prpStmt.setLong(1, storage.getId());
@@ -35,7 +35,7 @@ public class StorageDAO extends GeneralDAO{
     }
 
     public Storage update(Storage storage) throws Exception{
-        try(Connection conn = getConnection();  PreparedStatement prpStmt = conn.prepareStatement(SQL_UPDATE)){
+        try(Connection conn = createConnection();  PreparedStatement prpStmt = conn.prepareStatement(SQL_UPDATE)){
             prpStmt.setString(1, Arrays.toString(storage.getFormatsSupported()));
             prpStmt.setString(2, storage.getStorageCountry());
             prpStmt.setLong(3, storage.getStorageSize());
@@ -50,7 +50,7 @@ public class StorageDAO extends GeneralDAO{
     }
 
     public void delete(long id) throws Exception{
-        try(Connection conn = getConnection(); PreparedStatement prpStmt = conn.prepareStatement(SQL_DELETE)){
+        try(Connection conn = createConnection(); PreparedStatement prpStmt = conn.prepareStatement(SQL_DELETE)){
             prpStmt.setLong(1, id);
             if(prpStmt.executeUpdate() == 0)
                 throw new Exception("entity with id "+id+" was not deleted");
@@ -60,14 +60,14 @@ public class StorageDAO extends GeneralDAO{
     }
 
     public Storage findById(long id) throws SQLException, BadRequestException {
-        try(Connection conn = getConnection(); PreparedStatement prpStmt = conn.prepareStatement(SQL_FIND_BY_ID)){
+        try(Connection conn = createConnection(); PreparedStatement prpStmt = conn.prepareStatement(SQL_FIND_BY_ID)){
             prpStmt.setLong(1, id);
 
             ResultSet rs = prpStmt.executeQuery();
             if(rs.next()) {
                 Storage storage = new Storage();
                     storage.setId(rs.getLong(1));
-                    storage.setFormatsSupported(new String[]{rs.getString(2)});
+                    storage.setFormatsSupported(rs.getString(2).split(","));
                     storage.setStorageCountry(rs.getString(3));
                     storage.setStorageSize(rs.getLong(4));
                 return storage;
@@ -78,12 +78,8 @@ public class StorageDAO extends GeneralDAO{
         }
     }
 
-    public void transferAll(Storage storageFrom, Storage storageTo) throws Exception{
-        //TODO
-    }
-
-    public long getUsedSpace(long id) throws Exception{
-        try(Connection conn = getConnection(); PreparedStatement prpStmt = conn.prepareStatement(SQL_GET_FREE_SPACE)){
+    public long getUsedSpace(long id) throws BadRequestException, SQLException{
+        try(Connection conn = createConnection(); PreparedStatement prpStmt = conn.prepareStatement(SQL_GET_FREE_SPACE)){
             prpStmt.setLong(1, id);
 
             ResultSet rs = prpStmt.executeQuery();

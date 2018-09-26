@@ -19,7 +19,7 @@ public class FileDAO extends GeneralDAO{
     private static final String SQL_GET_ALL_BY_STORAGE = "SELECT * FROM FILES WHERE STORAGE_ID = ?";
 
     public File save(File file) throws Exception{
-        try(Connection conn = getConnection(); PreparedStatement prpStmt = conn.prepareStatement(SQL_SAVE)){
+        try(Connection conn = createConnection(); PreparedStatement prpStmt = conn.prepareStatement(SQL_SAVE)){
             file.setId(getNewEntityId(SQL_GET_ID));
 
             prpStmt.setLong(1, file.getId());
@@ -37,7 +37,7 @@ public class FileDAO extends GeneralDAO{
     }
 
     public File update(File file) throws Exception{
-        try(Connection conn = getConnection();  PreparedStatement prpStmt = conn.prepareStatement(SQL_UPDATE)){
+        try(Connection conn = createConnection();  PreparedStatement prpStmt = conn.prepareStatement(SQL_UPDATE)){
             prpStmt.setString(1, file.getName());
             prpStmt.setString(2, file.getFormat());
             prpStmt.setLong(3, file.getSize());
@@ -53,7 +53,7 @@ public class FileDAO extends GeneralDAO{
     }
 
     public void delete(long id) throws Exception{
-        try(Connection conn = getConnection(); PreparedStatement prpStmt = conn.prepareStatement(SQL_DELETE)){
+        try(Connection conn = createConnection(); PreparedStatement prpStmt = conn.prepareStatement(SQL_DELETE)){
             prpStmt.setLong(1, id);
             if(prpStmt.executeUpdate() == 0)
                 throw new Exception("entity with id "+id+" was not deleted");
@@ -63,7 +63,7 @@ public class FileDAO extends GeneralDAO{
     }
 
     public File findById(long id) throws SQLException, BadRequestException{
-        try(Connection conn = getConnection(); PreparedStatement prpStmt = conn.prepareStatement(SQL_FIND_BY_ID)){
+        try(Connection conn = createConnection(); PreparedStatement prpStmt = conn.prepareStatement(SQL_FIND_BY_ID)){
             prpStmt.setLong(1, id);
 
             ResultSet rs = prpStmt.executeQuery();
@@ -82,8 +82,8 @@ public class FileDAO extends GeneralDAO{
         }
     }
 
-    public List<File> getFilesByStorageId(long id) throws Exception{
-        try(Connection conn = getConnection(); PreparedStatement prStmt = conn.prepareStatement(SQL_GET_ALL_BY_STORAGE)){
+    public List<File> getFilesByStorageId(long id) throws SQLException{
+        try(Connection conn = createConnection(); PreparedStatement prStmt = conn.prepareStatement(SQL_GET_ALL_BY_STORAGE)){
             prStmt.setLong(1, id);
             ResultSet rs = prStmt.executeQuery();
             List<File> files = new ArrayList<>();
