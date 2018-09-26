@@ -28,20 +28,27 @@ public class Service {
     }
 
     public void transferAll(Storage storageFrom, Storage storageTo) throws Exception{
-        if(storageDAO.getUsedSpace(storageFrom.getId())+storageDAO.getUsedSpace(storageTo.getId()) > storageTo.getStorageSize())
+        if(storageDAO.getUsedSpace(storageTo.getId())+storageDAO.getUsedSpace(storageFrom.getId()) > storageTo.getStorageSize())
             throw new BadRequestException(getClass().getName()+"-put", "there is no free space. storage id:"+storageTo.getId());
+        checkStorageSize(storageTo, storageDAO.getUsedSpace(storageTo.getId())+storageDAO.getUsedSpace(storageFrom.getId()));
 
-
-        for(File file : fileDAO.getFilesByStorageId(storageFrom.getId())){
+        for(File file : fileDAO.getFilesByStorageId(storageFrom.getId()))
             checkFileFormat(storageTo, file);
 
-            file.setStorage(storageTo);
-            fileDAO.update(file);
-        }
+        fileDAO.updateStorageId(storageFrom.getId(), storageTo.getId());
     }
 
     public void transferFile(Storage storageFrom, Storage storageTo, long id) throws Exception{
+        File file = fileDAO.findById(id);
 
+        if(storageDAO.getUsedSpace(storageTo.getId())+file.getSize() > storageTo.getStorageSize())
+            throw new BadRequestException(getClass().getName()+"-put", "there is no free space. storage id:"+storageTo.getId());
+
+        checkStorageSize(storageTo, storageDAO.getUsedSpace(storageTo.getId())+file.getSize());
+        checkFileFormat(storageTo, file);
+
+        file.setStorage(storageTo);
+        fileDAO.update(file);
     }
 
     private void checkFileFormat(Storage storage, File file) throws Exception{
@@ -49,5 +56,10 @@ public class Service {
             if(format.equals(file.getFormat()))
                 return;
         throw new Exception("file format is not accepted. storage id:"+storage.getId()+(file.getId()==0?"":" file id:"+file.getId()));
+    }
+
+    private void checkStorageSize(Storage storageTo, long factSize){
+        if(factSize > storageTo.getStorageSize())
+            throw new BadRequestException(getClass().getName()+"-put", "there is no free space. storage id:"+storageTo.getId());
     }
 }

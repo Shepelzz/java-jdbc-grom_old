@@ -13,6 +13,7 @@ import java.util.List;
 public class FileDAO extends GeneralDAO{
     private static final String SQL_SAVE = "INSERT INTO FILES VALUES(?, ?, ?, ?, ?)";
     private static final String SQL_UPDATE = "UPDATE FILES SET NAME = ?, FORMAT = ?, FILE_SIZE = ?, STORAGE_ID = ? WHERE ID = ?";
+    private static final String SQL_UPDATE_STORAGE = "UPDATE FILES SET STORAGE_ID = ? WHERE STORAGE_ID = ?";
     private static final String SQL_FIND_BY_ID = "SELECT * FROM FILES WHERE ID = ?";
     private static final String SQL_DELETE = "DELETE FROM FILES WHERE ID = ?";
     private static final String SQL_GET_ID = "SELECT FILE_ID_SEQ.NEXTVAL FROM DUAL";
@@ -47,6 +48,18 @@ public class FileDAO extends GeneralDAO{
             if(prpStmt.executeUpdate() == 0)
                 throw new Exception("entity with id "+file.getId()+" was not updated");
             return file;
+        }catch (SQLException e){
+            throw e;
+        }
+    }
+
+    public void updateStorageId(long storageFromId, long storageToId) throws Exception{
+        try(Connection conn = createConnection();  PreparedStatement prpStmt = conn.prepareStatement(SQL_UPDATE_STORAGE)){
+            prpStmt.setLong(1, storageToId);
+            prpStmt.setLong(2, storageFromId);
+
+            if(prpStmt.executeUpdate() == 0)
+                throw new Exception("update all from storage id:"+storageFromId+" to id:"+storageToId+" failed");
         }catch (SQLException e){
             throw e;
         }

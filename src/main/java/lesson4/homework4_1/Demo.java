@@ -33,8 +33,8 @@ public class Demo {
 
             StorageDAO storageDAO = new StorageDAO();
             Controller controller = new Controller();
-            controller.transferAll(storageDAO.findById(2), storageDAO.findById(1));
-
+            //controller.transferAll(storageDAO.findById(2), storageDAO.findById(1));
+            controller.transferFile(storageDAO.findById(2), storageDAO.findById(1), 4);
 
         }catch (Exception e){
             e.getMessage();
