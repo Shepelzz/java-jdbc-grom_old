@@ -14,28 +14,24 @@ public class Demo {
         FileDAO fileDAO = new FileDAO();
         Storage storage = new Storage();
             storage.setId(1);
-            storage.setFormatsSupported(new String[]{"txt"});
-            storage.setStorageCountry("Ukraine");
-            storage.setStorageSize(500);
 
         File file = new File();
-            file.setId(10);
-            file.setName("test_file1");
-            file.setFormat("txt");
-            file.setSize(130);
+            file.setName("file");
+            file.setFormat("xls");
+            file.setSize(10);
             file.setStorage(storage);
 
         try {
-            //fileDAO.save(file);
-            //System.out.println(fileDAO.findById(10).getName());
-            //fileDAO.update(file);
-            //fileDAO.delete(10);
 
             StorageDAO storageDAO = new StorageDAO();
             Controller controller = new Controller();
-            //controller.transferAll(storageDAO.findById(2), storageDAO.findById(1));
-            controller.transferFile(storageDAO.findById(2), storageDAO.findById(1), 4);
 
+            controller.put(storage, file);
+            //controller.transferAll(storageDAO.findById(2), storageDAO.findById(1));
+            //controller.transferFile(storageDAO.findById(1), storageDAO.findById(2), 31);
+
+
+            //controller.delete(storageDAO.findById(2), fileDAO.findById(6));
         }catch (Exception e){
             e.getMessage();
             e.printStackTrace();

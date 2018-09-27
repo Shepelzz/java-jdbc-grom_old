@@ -1,7 +1,9 @@
 package lesson4.homework4_1.dao;
 
 import lesson4.homework4_1.exception.BadRequestException;
+import lesson4.homework4_1.exception.InternalServerError;
 import lesson4.homework4_1.model.File;
+import lesson4.homework4_1.model.Storage;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -10,17 +12,18 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class FileDAO extends GeneralDAO{
+public class FileDAO extends GeneralDAO<File>{
     private static final String SQL_SAVE = "INSERT INTO FILES VALUES(?, ?, ?, ?, ?)";
     private static final String SQL_UPDATE = "UPDATE FILES SET NAME = ?, FORMAT = ?, FILE_SIZE = ?, STORAGE_ID = ? WHERE ID = ?";
-    private static final String SQL_UPDATE_STORAGE = "UPDATE FILES SET STORAGE_ID = ? WHERE STORAGE_ID = ?";
+    private static final String SQL_UPDATE_BY_STORAGE_ID = "UPDATE FILES SET STORAGE_ID = ? WHERE STORAGE_ID = ?";
     private static final String SQL_FIND_BY_ID = "SELECT * FROM FILES WHERE ID = ?";
     private static final String SQL_DELETE = "DELETE FROM FILES WHERE ID = ?";
     private static final String SQL_GET_ID = "SELECT FILE_ID_SEQ.NEXTVAL FROM DUAL";
     private static final String SQL_GET_ALL_BY_STORAGE = "SELECT * FROM FILES WHERE STORAGE_ID = ?";
+    private static final String SQL_DELETE_BY_STORAGE_ID = "DELETE FROM FILES WHERE STORAGE_ID = ?";
 
-    public File save(File file) throws Exception{
-        try(Connection conn = createConnection(); PreparedStatement prpStmt = conn.prepareStatement(SQL_SAVE)){
+    public File save(File file) throws InternalServerError, SQLException{
+        try(Connection conn = getConnection(); PreparedStatement prpStmt = conn.prepareStatement(SQL_SAVE)){
             file.setId(getNewEntityId(SQL_GET_ID));
 
             prpStmt.setLong(1, file.getId());
@@ -30,15 +33,15 @@ public class FileDAO extends GeneralDAO{
             prpStmt.setLong(5, file.getStorage().getId());
 
             if(prpStmt.executeUpdate() == 0)
-                throw new Exception("entity with id "+file.getId()+" was not saved");
+                throw new InternalServerError(getClass().getName()+"-save","entity with id "+file.getId()+" was not saved");
             return file;
         }catch (SQLException e){
             throw e;
         }
     }
 
-    public File update(File file) throws Exception{
-        try(Connection conn = createConnection();  PreparedStatement prpStmt = conn.prepareStatement(SQL_UPDATE)){
+    public File update(File file) throws InternalServerError, SQLException{
+        try(Connection conn = getConnection();  PreparedStatement prpStmt = conn.prepareStatement(SQL_UPDATE)){
             prpStmt.setString(1, file.getName());
             prpStmt.setString(2, file.getFormat());
             prpStmt.setLong(3, file.getSize());
@@ -46,48 +49,40 @@ public class FileDAO extends GeneralDAO{
             prpStmt.setLong(5, file.getId());
 
             if(prpStmt.executeUpdate() == 0)
-                throw new Exception("entity with id "+file.getId()+" was not updated");
+                throw new InternalServerError(getClass().getName()+"-update","entity with id "+file.getId()+" was not updated");
             return file;
         }catch (SQLException e){
             throw e;
         }
     }
 
-    public void updateStorageId(long storageFromId, long storageToId) throws Exception{
-        try(Connection conn = createConnection();  PreparedStatement prpStmt = conn.prepareStatement(SQL_UPDATE_STORAGE)){
+    public void updateFilesByStorageId(long storageFromId, long storageToId) throws InternalServerError, SQLException{
+        try(Connection conn = getConnection();  PreparedStatement prpStmt = conn.prepareStatement(SQL_UPDATE_BY_STORAGE_ID)){
             prpStmt.setLong(1, storageToId);
             prpStmt.setLong(2, storageFromId);
 
             if(prpStmt.executeUpdate() == 0)
-                throw new Exception("update all from storage id:"+storageFromId+" to id:"+storageToId+" failed");
+                throw new InternalServerError(getClass().getName()+"-updateFilesByStorageId", "update fail from storage id:"+storageFromId+" to id:"+storageToId);
         }catch (SQLException e){
             throw e;
         }
     }
 
-    public void delete(long id) throws Exception{
-        try(Connection conn = createConnection(); PreparedStatement prpStmt = conn.prepareStatement(SQL_DELETE)){
-            prpStmt.setLong(1, id);
-            if(prpStmt.executeUpdate() == 0)
-                throw new Exception("entity with id "+id+" was not deleted");
-        }catch (SQLException e){
-            throw e;
-        }
+    public void delete(long id) throws InternalServerError, SQLException{
+        delete(id, SQL_DELETE);
     }
 
-    public File findById(long id) throws SQLException, BadRequestException{
-        try(Connection conn = createConnection(); PreparedStatement prpStmt = conn.prepareStatement(SQL_FIND_BY_ID)){
+    public void deleteByStorageId(long id) throws InternalServerError, SQLException{
+        delete(id, SQL_DELETE_BY_STORAGE_ID);
+    }
+
+    public File findById(long id) throws SQLException{
+        try(Connection conn = getConnection(); PreparedStatement prpStmt = conn.prepareStatement(SQL_FIND_BY_ID)){
             prpStmt.setLong(1, id);
 
             ResultSet rs = prpStmt.executeQuery();
             if(rs.next()) {
-                File file = new File();
-                    file.setId(rs.getLong(1));
-                    file.setName(rs.getString(2));
-                    file.setFormat(rs.getString(3));
-                    file.setSize(rs.getLong(4));
-                    file.setStorage(new StorageDAO().findById(rs.getLong(5)));
-                return file;
+                return getFileFromResultSet(rs);
             }
             throw new BadRequestException(getClass().getName()+"-findById", "there is no entity with id "+id);
         }catch (SQLException e){
@@ -96,23 +91,46 @@ public class FileDAO extends GeneralDAO{
     }
 
     public List<File> getFilesByStorageId(long id) throws SQLException{
-        try(Connection conn = createConnection(); PreparedStatement prStmt = conn.prepareStatement(SQL_GET_ALL_BY_STORAGE)){
+        try(Connection conn = getConnection(); PreparedStatement prStmt = conn.prepareStatement(SQL_GET_ALL_BY_STORAGE)){
             prStmt.setLong(1, id);
             ResultSet rs = prStmt.executeQuery();
             List<File> files = new ArrayList<>();
             while(rs.next()){
-                File file = new File();
-                    file.setId(rs.getLong(1));
-                    file.setName(rs.getString(2));
-                    file.setFormat(rs.getString(3));
-                    file.setSize(rs.getLong(4));
-                    file.setStorage(new StorageDAO().findById(rs.getLong(5)));
-                files.add(file);
+                files.add(getFileFromResultSet(rs));
             }
             return files;
         }catch (SQLException e){
-            System.err.println("Something went wrong");
             throw new SQLException(e);
         }
+    }
+
+    public void transferAll(Storage storageFrom, Storage storageTo) throws InternalServerError, SQLException{
+        try(Connection conn = getConnection()){
+            try{
+                conn.setAutoCommit(false);
+
+                if(!getFilesByStorageId(storageTo.getId()).isEmpty())
+                    deleteByStorageId(storageTo.getId());
+
+                updateFilesByStorageId(storageFrom.getId(), storageTo.getId());
+
+                conn.commit();
+            }catch (InternalServerError | SQLException e){
+                conn.rollback();
+                throw e;
+            }
+        }catch (InternalServerError | SQLException e){
+            throw e;
+        }
+    }
+
+    private File getFileFromResultSet(ResultSet rs) throws SQLException{
+        File file = new File();
+            file.setId(rs.getLong(1));
+            file.setName(rs.getString(2));
+            file.setFormat(rs.getString(3));
+            file.setSize(rs.getLong(4));
+            file.setStorage(new StorageDAO().findById(rs.getLong(5)));
+        return file;
     }
 }
