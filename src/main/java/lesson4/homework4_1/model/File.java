@@ -56,13 +56,14 @@ public class File {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         File file = (File) o;
-        return id == file.id &&
-                Objects.equals(name, file.name);
+        return Objects.equals(name, file.name) &&
+                Objects.equals(format, file.format) &&
+                Objects.equals(storage, file.storage);
     }
 
     @Override
     public int hashCode() {
 
-        return Objects.hash(id, name);
+        return Objects.hash(name, format, storage);
     }
 }

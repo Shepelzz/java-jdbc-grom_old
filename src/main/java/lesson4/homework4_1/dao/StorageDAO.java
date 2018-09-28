@@ -54,7 +54,7 @@ public class StorageDAO extends GeneralDAO{
         delete(id, SQL_DELETE);
     }
 
-    public Storage findById(long id) throws SQLException, BadRequestException {
+    public Storage findById(long id) throws SQLException {
         try(Connection conn = getConnection(); PreparedStatement prpStmt = conn.prepareStatement(SQL_FIND_BY_ID)){
             prpStmt.setLong(1, id);
 
@@ -73,7 +73,7 @@ public class StorageDAO extends GeneralDAO{
         }
     }
 
-    public long getUsedSpace(long id) throws SQLException, BadRequestException{
+    public long getUsedSpace(long id) throws SQLException{
         try(Connection conn = getConnection(); PreparedStatement prpStmt = conn.prepareStatement(SQL_GET_FREE_SPACE)){
             prpStmt.setLong(1, id);
 

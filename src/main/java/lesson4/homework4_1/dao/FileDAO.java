@@ -10,7 +10,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class FileDAO extends GeneralDAO{
     private static final String SQL_SAVE = "INSERT INTO FILES VALUES(?, ?, ?, ?, ?)";
@@ -19,7 +21,9 @@ public class FileDAO extends GeneralDAO{
     private static final String SQL_FIND_BY_ID = "SELECT * FROM FILES WHERE ID = ?";
     private static final String SQL_DELETE = "DELETE FROM FILES WHERE ID = ?";
     private static final String SQL_GET_ID = "SELECT FILE_ID_SEQ.NEXTVAL FROM DUAL";
-    private static final String SQL_GET_ALL_BY_STORAGE = "SELECT * FROM FILES WHERE STORAGE_ID = ?";
+    private static final String SQL_GET_FILES_BY_STORAGE_ID = "SELECT * FROM FILES WHERE STORAGE_ID = ?";
+    private static final String SQL_GET_INFO_BY_STORAGE_ID =
+            "SELECT FILES.id, FILES.NAME, FILES.FORMAT, FILES.FILE_SIZE, STORAGE.ID, STORAGE.FORMATS_SUPPORTED, STORAGE.STORAGE_SIZE   FROM FILES LEFT JOIN STORAGE ON FILES.STORAGE_ID = STORAGE.ID WHERE STORAGE.ID = ?";
     private static final String SQL_DELETE_BY_STORAGE_ID = "DELETE FROM FILES WHERE STORAGE_ID = ?";
 
     public File save(File file) throws InternalServerError, SQLException{
@@ -91,7 +95,7 @@ public class FileDAO extends GeneralDAO{
     }
 
     public List<File> getFilesByStorageId(long id) throws SQLException{
-        try(Connection conn = getConnection(); PreparedStatement prStmt = conn.prepareStatement(SQL_GET_ALL_BY_STORAGE)){
+        try(Connection conn = getConnection(); PreparedStatement prStmt = conn.prepareStatement(SQL_GET_FILES_BY_STORAGE_ID)){
             prStmt.setLong(1, id);
             ResultSet rs = prStmt.executeQuery();
             List<File> files = new ArrayList<>();
@@ -100,7 +104,38 @@ public class FileDAO extends GeneralDAO{
             }
             return files;
         }catch (SQLException e){
-            throw new SQLException(e);
+            throw e;
+        }
+    }
+
+    public Map<String, Object> getFilesByStorageIdWithInfo(long id) throws SQLException{
+        try(Connection conn = getConnection(); PreparedStatement prStmt = conn.prepareStatement(SQL_GET_INFO_BY_STORAGE_ID)){
+            prStmt.setLong(1, id);
+            ResultSet rs = prStmt.executeQuery();
+
+            Map<String, Object> result = new HashMap<>();
+            Storage storage = new Storage();
+            List<File> files = new ArrayList<>();
+            while(rs.next()){
+                File file = new File();
+                    file.setId(rs.getLong(1));
+                    file.setName(rs.getString(2));
+                    file.setFormat(rs.getString(3));
+                    file.setSize(rs.getLong(4));
+
+                files.add(file);
+
+                if(rs.isFirst()) {
+                    storage.setId(rs.getLong(5));
+                    storage.setFormatsSupported(rs.getString(6).split(","));
+                    storage.setStorageSize(rs.getLong(7));
+                }
+            }
+            result.put("Storage", storage);
+            result.put("FilesList", files);
+            return result;
+        }catch (SQLException e){
+            throw e;
         }
     }
 
