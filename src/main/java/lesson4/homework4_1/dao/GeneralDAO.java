@@ -13,7 +13,7 @@ public abstract class GeneralDAO {
         try(Connection conn = getConnection(); PreparedStatement prpStmt = conn.prepareStatement(sql)){
             prpStmt.setLong(1, id);
             if(prpStmt.executeUpdate() == 0)
-                throw new InternalServerError(getClass().getName()+"-delete","entity with id "+id+" was not deleted");
+                throw new InternalServerError(getClass().getName()+"-delete. Entity with id "+id+" was not deleted");
         }catch (SQLException e){
             throw e;
         }
@@ -28,9 +28,8 @@ public abstract class GeneralDAO {
             ResultSet rs = stmt.executeQuery(sql);
             if(rs.next())
                 return rs.getLong(1);
-            throw new InternalServerError(getClass().getName()+"-getNewEntityId","id get fail");
+            throw new InternalServerError(getClass().getName()+"-getNewEntityId. Get ID fail");
         }catch (SQLException e){
-            System.err.println("Something went wrong");
             throw e;
         }
     }

@@ -28,7 +28,7 @@ public class StorageDAO extends GeneralDAO{
             prpStmt.setLong(4, storage.getStorageSize());
 
             if(prpStmt.executeUpdate() == 0)
-                throw new InternalServerError(getClass().getName()+"-save","entity with id "+storage.getId()+" was not saved");
+                throw new InternalServerError(getClass().getName()+"-save. Storage with id "+storage.getId()+" was not saved");
             return storage;
         }catch (SQLException e){
             throw e;
@@ -43,7 +43,7 @@ public class StorageDAO extends GeneralDAO{
             prpStmt.setLong(4, storage.getId());
 
             if(prpStmt.executeUpdate() == 0)
-                throw new InternalServerError(getClass().getName()+"-update","entity with id "+storage.getId()+" was not updated");
+                throw new InternalServerError(getClass().getName()+"-update. Storage with id "+storage.getId()+" was not updated");
             return storage;
         }catch (SQLException e){
             throw e;
@@ -67,21 +67,7 @@ public class StorageDAO extends GeneralDAO{
                     storage.setStorageSize(rs.getLong(4));
                 return storage;
             }
-            throw new BadRequestException(getClass().getName()+"-findById", "there is no entity with id "+id);
-        }catch (SQLException e){
-            throw e;
-        }
-    }
-
-    public long getUsedSpace(long id) throws SQLException{
-        try(Connection conn = getConnection(); PreparedStatement prpStmt = conn.prepareStatement(SQL_GET_FREE_SPACE)){
-            prpStmt.setLong(1, id);
-
-            ResultSet rs = prpStmt.executeQuery();
-            if(rs.next()) {
-                return rs.getLong(1);
-            }
-            throw new BadRequestException(getClass().getName()+"-findById", "there is no entity with id "+id);
+            throw new BadRequestException(getClass().getName()+"-findById. There is no Storage with id "+id);
         }catch (SQLException e){
             throw e;
         }

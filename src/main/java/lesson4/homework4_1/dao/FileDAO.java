@@ -22,8 +22,6 @@ public class FileDAO extends GeneralDAO{
     private static final String SQL_DELETE = "DELETE FROM FILES WHERE ID = ?";
     private static final String SQL_GET_ID = "SELECT FILE_ID_SEQ.NEXTVAL FROM DUAL";
     private static final String SQL_GET_FILES_BY_STORAGE_ID = "SELECT * FROM FILES WHERE STORAGE_ID = ?";
-    private static final String SQL_GET_INFO_BY_STORAGE_ID =
-            "SELECT FILES.id, FILES.NAME, FILES.FORMAT, FILES.FILE_SIZE, STORAGE.ID, STORAGE.FORMATS_SUPPORTED, STORAGE.STORAGE_SIZE   FROM FILES LEFT JOIN STORAGE ON FILES.STORAGE_ID = STORAGE.ID WHERE STORAGE.ID = ?";
     private static final String SQL_DELETE_BY_STORAGE_ID = "DELETE FROM FILES WHERE STORAGE_ID = ?";
 
     public File save(File file) throws InternalServerError, SQLException{
@@ -37,7 +35,7 @@ public class FileDAO extends GeneralDAO{
             prpStmt.setLong(5, file.getStorage().getId());
 
             if(prpStmt.executeUpdate() == 0)
-                throw new InternalServerError(getClass().getName()+"-save","entity with id "+file.getId()+" was not saved");
+                throw new InternalServerError(getClass().getName()+"-save. File with id "+file.getId()+" was not saved");
             return file;
         }catch (SQLException e){
             throw e;
@@ -53,7 +51,7 @@ public class FileDAO extends GeneralDAO{
             prpStmt.setLong(5, file.getId());
 
             if(prpStmt.executeUpdate() == 0)
-                throw new InternalServerError(getClass().getName()+"-update","entity with id "+file.getId()+" was not updated");
+                throw new InternalServerError(getClass().getName()+"-update. File with id "+file.getId()+" was not updated");
             return file;
         }catch (SQLException e){
             throw e;
@@ -66,7 +64,7 @@ public class FileDAO extends GeneralDAO{
             prpStmt.setLong(2, storageFromId);
 
             if(prpStmt.executeUpdate() == 0)
-                throw new InternalServerError(getClass().getName()+"-updateFilesByStorageId", "update fail from storage id:"+storageFromId+" to id:"+storageToId);
+                throw new InternalServerError(getClass().getName()+"-updateFilesByStorageId. Update fail from storage id:"+storageFromId+" to id:"+storageToId);
         }catch (SQLException e){
             throw e;
         }
@@ -88,7 +86,7 @@ public class FileDAO extends GeneralDAO{
             if(rs.next()) {
                 return getFileFromResultSet(rs);
             }
-            throw new BadRequestException(getClass().getName()+"-findById", "there is no entity with id "+id);
+            throw new BadRequestException(getClass().getName()+"-findById. There is no file with id "+id);
         }catch (SQLException e){
             throw e;
         }
@@ -108,38 +106,7 @@ public class FileDAO extends GeneralDAO{
         }
     }
 
-    public Map<String, Object> getFilesByStorageIdWithInfo(long id) throws SQLException{
-        try(Connection conn = getConnection(); PreparedStatement prStmt = conn.prepareStatement(SQL_GET_INFO_BY_STORAGE_ID)){
-            prStmt.setLong(1, id);
-            ResultSet rs = prStmt.executeQuery();
-
-            Map<String, Object> result = new HashMap<>();
-            Storage storage = new Storage();
-            List<File> files = new ArrayList<>();
-            while(rs.next()){
-                File file = new File();
-                    file.setId(rs.getLong(1));
-                    file.setName(rs.getString(2));
-                    file.setFormat(rs.getString(3));
-                    file.setSize(rs.getLong(4));
-
-                files.add(file);
-
-                if(rs.isFirst()) {
-                    storage.setId(rs.getLong(5));
-                    storage.setFormatsSupported(rs.getString(6).split(","));
-                    storage.setStorageSize(rs.getLong(7));
-                }
-            }
-            result.put("Storage", storage);
-            result.put("FilesList", files);
-            return result;
-        }catch (SQLException e){
-            throw e;
-        }
-    }
-
-    public void transferAll(Storage storageFrom, Storage storageTo) throws InternalServerError, SQLException{
+    public void updateStorageIdForAllFiles(Storage storageFrom, Storage storageTo) throws InternalServerError, SQLException{
         try(Connection conn = getConnection()){
             try{
                 conn.setAutoCommit(false);
@@ -150,11 +117,11 @@ public class FileDAO extends GeneralDAO{
                 updateFilesByStorageId(storageFrom.getId(), storageTo.getId());
 
                 conn.commit();
-            }catch (InternalServerError | SQLException e){
+            }catch (SQLException e){
                 conn.rollback();
                 throw e;
             }
-        }catch (InternalServerError | SQLException e){
+        }catch (SQLException e){
             throw e;
         }
     }

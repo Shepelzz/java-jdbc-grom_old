@@ -6,23 +6,34 @@ import lesson4.homework4_1.dao.StorageDAO;
 import lesson4.homework4_1.model.File;
 import lesson4.homework4_1.model.Storage;
 
+import java.sql.SQLException;
+
 public class Demo {
     public static void main(String[] args) {
 
         FileDAO fileDAO = new FileDAO();
-        Storage storage = new Storage();
-            storage.setId(1);
+        StorageDAO storageDAO = new StorageDAO();
+        Controller controller = new Controller();
 
-        File file = new File();
-            file.setName("file");
-            file.setFormat("xls");
-            file.setSize(10);
-            file.setStorage(storage);
+        Storage storage = null;
+        File file;
 
         try {
+            storage = storageDAO.findById(2);
+        }catch (SQLException e){
+            System.err.println(e);
+        }
+        file = new File();
+            file.setId(100);
+//            file.setName("txt_fil4");
+//            file.setFormat("txt");
+//            file.setSize(10);
 
-            StorageDAO storageDAO = new StorageDAO();
-            Controller controller = new Controller();
+        try {
+            //controller.put(storage, file);
+            //controller.delete(storage, file);
+            //controller.transferFile(storageDAO.findById(2), storageDAO.findById(1), 100);
+            controller.transferAll(storageDAO.findById(2), storageDAO.findById(1));
 
 //            Service service = new Service();
 //            service.validateFile(storageDAO.findById(1), null);
@@ -34,8 +45,7 @@ public class Demo {
 
             //controller.delete(storageDAO.findById(2), fileDAO.findById(6));
         }catch (Exception e){
-            e.getMessage();
-            e.printStackTrace();
+            System.err.println(e);
         }
 
     }
