@@ -46,7 +46,7 @@ public class Service {
                     throw new BadRequestException(getClass().getName() + "-transferAll. Storage is full. storage id:" + storageTo.getId() + (file.getId() == 0 ? "" : " file id:" + file.getId()));
             }
 
-            fileDAO.updateStorageIdForAllFiles(storageFrom, storageTo);
+            fileDAO.updateFilesByStorageId(storageFrom.getId(), storageTo.getId());
         }catch (SQLException e){
             throw new InternalServerError(getClass().getName() + "-transfer all. " +e.getMessage());
         }

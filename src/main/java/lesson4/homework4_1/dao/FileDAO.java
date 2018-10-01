@@ -3,16 +3,13 @@ package lesson4.homework4_1.dao;
 import lesson4.homework4_1.exception.BadRequestException;
 import lesson4.homework4_1.exception.InternalServerError;
 import lesson4.homework4_1.model.File;
-import lesson4.homework4_1.model.Storage;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class FileDAO extends GeneralDAO{
     private static final String SQL_SAVE = "INSERT INTO FILES VALUES(?, ?, ?, ?, ?)";
@@ -101,26 +98,6 @@ public class FileDAO extends GeneralDAO{
                 files.add(getFileFromResultSet(rs));
             }
             return files;
-        }catch (SQLException e){
-            throw e;
-        }
-    }
-
-    public void updateStorageIdForAllFiles(Storage storageFrom, Storage storageTo) throws InternalServerError, SQLException{
-        try(Connection conn = getConnection()){
-            try{
-                conn.setAutoCommit(false);
-
-                if(!getFilesByStorageId(storageTo.getId()).isEmpty())
-                    deleteByStorageId(storageTo.getId());
-
-                updateFilesByStorageId(storageFrom.getId(), storageTo.getId());
-
-                conn.commit();
-            }catch (SQLException e){
-                conn.rollback();
-                throw e;
-            }
         }catch (SQLException e){
             throw e;
         }
