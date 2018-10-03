@@ -9,16 +9,6 @@ public abstract class GeneralDAO {
     private static final String USER = "main";
     private static final String PASS = "11111111";
 
-    void delete(long id, String sql) throws InternalServerError, SQLException{
-        try(Connection conn = getConnection(); PreparedStatement prpStmt = conn.prepareStatement(sql)){
-            prpStmt.setLong(1, id);
-            if(prpStmt.executeUpdate() == 0)
-                throw new InternalServerError(getClass().getName()+"-delete. Entity with id "+id+" was not deleted");
-        }catch (SQLException e){
-            throw e;
-        }
-    }
-
     public Connection getConnection() throws SQLException {
         return DriverManager.getConnection(DB_URL, USER, PASS);
     }
@@ -32,5 +22,10 @@ public abstract class GeneralDAO {
         }catch (SQLException e){
             throw e;
         }
+    }
+
+    void closeConnection(Connection connection) throws SQLException{
+        if(connection != null)
+            connection.close();
     }
 }

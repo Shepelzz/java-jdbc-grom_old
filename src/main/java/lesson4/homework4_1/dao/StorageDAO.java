@@ -16,7 +16,7 @@ public class StorageDAO extends GeneralDAO{
     private static final String SQL_FIND_BY_ID = "SELECT * FROM STORAGE WHERE ID = ?";
     private static final String SQL_DELETE = "DELETE FROM STORAGE WHERE ID = ?";
     private static final String SQL_GET_ID = "SELECT STORAGE_ID_SEQ.NEXTVAL FROM DUAL";
-    private static final String SQL_GET_FREE_SPACE = "SELECT SUM(FILE_SIZE) FROM FILES WHERE STORAGE_ID = ?";
+    private static final String SQL_CHANGE_SIZE = "UPDATE STORAGE SET STORAGE_SIZE = STORAGE_SIZE+? WHERE ID = ?";
 
     public Storage save(Storage storage) throws InternalServerError, SQLException{
         try(Connection conn = getConnection(); PreparedStatement prpStmt = conn.prepareStatement(SQL_SAVE)){
@@ -50,8 +50,26 @@ public class StorageDAO extends GeneralDAO{
         }
     }
 
+    void changeSize(long id, long size) throws InternalServerError, SQLException{
+        try(Connection conn = getConnection();  PreparedStatement prpStmt = conn.prepareStatement(SQL_CHANGE_SIZE)){
+            prpStmt.setLong(1, size);
+            prpStmt.setLong(2, id);
+
+            if(prpStmt.executeUpdate() == 0)
+                throw new InternalServerError(getClass().getName()+"-update. Storage size with id "+id+" was not updated");
+        }catch (SQLException e){
+            throw e;
+        }
+    }
+
     public void delete(long id) throws InternalServerError, SQLException{
-        delete(id, SQL_DELETE);
+        try(Connection conn = getConnection(); PreparedStatement prpStmt = conn.prepareStatement(SQL_DELETE)){
+            prpStmt.setLong(1, id);
+            if(prpStmt.executeUpdate() == 0)
+                throw new InternalServerError(getClass().getName()+"-delete. Entity with id "+id+" was not deleted");
+        }catch (SQLException e){
+            throw e;
+        }
     }
 
     public Storage findById(long id) throws SQLException {

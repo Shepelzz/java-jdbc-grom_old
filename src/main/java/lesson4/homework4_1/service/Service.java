@@ -19,7 +19,7 @@ public class Service {
         validateFile(storage, file);
 
         try {
-            return fileDAO.save(file);
+            return fileDAO.putFileIntoStorage(storage, file);
         }catch (SQLException e){
             throw new InternalServerError(getClass().getName() + "-put. " +e.getMessage());
         }
@@ -27,7 +27,7 @@ public class Service {
 
     public void delete(Storage storage, File file) throws InternalServerError {
         try {
-            fileDAO.delete(file.getId());
+            fileDAO.deleteFileFromStorage(storage, file);
         }catch (SQLException e){
             throw new InternalServerError(getClass().getName() + "-delete. " +e.getMessage());
         }
@@ -37,16 +37,18 @@ public class Service {
         try {
             List<File> filesInStorage = fileDAO.getFilesByStorageId(storageFrom.getId());
 
-            long runningFileSize = 0;
+            long filesSize = 0;
+            long storageSize = storageTo.getStorageSize();
             for (File file : filesInStorage) {
-                runningFileSize += file.getSize();
+                filesSize += file.getSize();
+                storageSize -= file.getSize();
 
                 checkFileFormat(storageTo, file);
-                if (runningFileSize > storageTo.getStorageSize())
+                if (storageSize < 0)
                     throw new BadRequestException(getClass().getName() + "-transferAll. Storage is full. storage id:" + storageTo.getId() + (file.getId() == 0 ? "" : " file id:" + file.getId()));
             }
 
-            fileDAO.updateFilesByStorageId(storageFrom.getId(), storageTo.getId());
+            fileDAO.transferFiles(storageFrom, storageTo, filesSize);
         }catch (SQLException e){
             throw new InternalServerError(getClass().getName() + "-transfer all. " +e.getMessage());
         }
@@ -60,7 +62,7 @@ public class Service {
 
             validateFile(storageTo, file);
 
-            fileDAO.update(file);
+            fileDAO.transferFile(storageFrom, storageTo, file);
         }catch (SQLException e){
             throw new InternalServerError(getClass().getName() + "-transfer file. " +e.getMessage());
         }
@@ -74,16 +76,13 @@ public class Service {
             throw new InternalServerError(getClass().getName()+"-validateFile"+e.getMessage());
         }
 
-        long filesSize = 0;
         //check if exists
         for (File f : filesInStorage) {
             if (f.equals(file))
                 throw new BadRequestException(getClass().getName() + "-validateFile. File id:" + file.getId() + " already exists in storage id:" + storage.getId());
-            filesSize += f.getSize();
         }
-
         //check size
-        if(storage.getStorageSize()-filesSize < file.getSize())
+        if(storage.getStorageSize() < file.getSize())
             throw new BadRequestException(getClass().getName()+"-checkInputFileSize. There is no enough free space in storage id:"+storage.getId()+" file id:"+file.getId());
         //check format
         checkFileFormat(storage, file);
