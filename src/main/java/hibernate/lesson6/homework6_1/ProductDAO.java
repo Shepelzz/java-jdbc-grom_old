@@ -14,8 +14,8 @@ public class ProductDAO {
     private static final String FIND_BY_NAME_HQL = "FROM Product WHERE name = : productName";
     private static final String FIND_BY_CONTAINED_NAME_HQL = "FROM Product WHERE name LIKE CONCAT('%',: productName, '%')";
     private static final String FIND_BY_PRICE_HQL = "FROM Product WHERE price BETWEEN : priceFrom AND : priceTo";
-    private static final String FIND_BY_NAME_ASC_HQL = "FROM Product WHERE name = : productName ORDER BY name";
-    private static final String FIND_BY_NAME_DESC_HQL = "FROM Product WHERE name = : productName ORDER BY name";
+    private static final String FIND_BY_NAME_ASC_HQL = "FROM Product WHERE name LIKE CONCAT('%',: productName, '%') ORDER BY name";
+    private static final String FIND_BY_NAME_DESC_HQL = "FROM Product WHERE name LIKE CONCAT('%',: productName, '%') ORDER BY name DESC";
     private static final String FIND_BY_PRICE_DESC_HQL = "FROM Product WHERE price BETWEEN : priceFrom AND : priceTo ORDER BY price DESC";
 
     public Product findById(long id){

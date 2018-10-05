@@ -9,6 +9,9 @@ public class Demo {
         //System.out.println(productDAO.findByContainedName("pr").toString());
         //System.out.println(productDAO.findByPrice(200, 400).toString());
 
+//        System.out.println(productDAO.findByNameSortedAsc("o"));
+//        System.out.println(productDAO.findByNameSortedDesc("o"));
+
         //System.out.println(productDAO.findByPriceSortedDesc(200, 400).toString());
     }
 }
