@@ -22,9 +22,9 @@ public class ProductDAO {
     public Product findById(long id){
         try (Session session = createSessionFactory().openSession()) {
 
-            Query query = session.createQuery(FIND_BY_ID_HQL);
+            Query<Product> query = session.createQuery(FIND_BY_ID_HQL);
             query.setParameter("productId", id);
-            return (Product) query.getSingleResult();
+            return query.getSingleResult();
 
         } catch (HibernateException e) {
             System.err.println("findById failed");
@@ -36,9 +36,9 @@ public class ProductDAO {
     public List<Product> findByName(String name){
         try (Session session = createSessionFactory().openSession()) {
 
-            Query query = session.createQuery(FIND_BY_NAME_HQL);
+            Query<Product> query = session.createQuery(FIND_BY_NAME_HQL);
             query.setParameter("productName", name);
-            return (List<Product>) query.list();
+            return query.list();
 
         } catch (HibernateException e) {
             System.err.println("findByName failed");
@@ -50,9 +50,9 @@ public class ProductDAO {
     public List<Product> findByContainedName(String name){
         try (Session session = createSessionFactory().openSession()) {
 
-            Query query = session.createQuery(FIND_BY_CONTAINED_NAME_HQL);
+            Query<Product> query = session.createQuery(FIND_BY_CONTAINED_NAME_HQL);
             query.setParameter("productName", name);
-            return (List<Product>) query.list();
+            return query.list();
 
         } catch (HibernateException e) {
             System.err.println("findByName failed");
@@ -64,7 +64,7 @@ public class ProductDAO {
     public List<Product> findByPrice(int price, int delta){
         try (Session session = createSessionFactory().openSession()) {
 
-            Query query = session.createQuery(FIND_BY_PRICE_HQL);
+            Query<Product> query = session.createQuery(FIND_BY_PRICE_HQL);
             query.setParameter("priceFrom", price-delta);
             query.setParameter("priceTo", price+delta);
             return query.list();
@@ -79,9 +79,9 @@ public class ProductDAO {
     public List<Product> findByNameSortedAsc(String name){
         try (Session session = createSessionFactory().openSession()) {
 
-            Query query = session.createQuery(FIND_BY_NAME_ASC_HQL);
+            Query<Product> query = session.createQuery(FIND_BY_NAME_ASC_HQL);
             query.setParameter("productName", name);
-            return (List<Product>) query.list();
+            return query.list();
 
         } catch (HibernateException e) {
             System.err.println("findByName failed");
@@ -93,9 +93,9 @@ public class ProductDAO {
     public List<Product> findByNameSortedDesc(String name){
         try (Session session = createSessionFactory().openSession()) {
 
-            Query query = session.createQuery(FIND_BY_NAME_DESC_HQL);
+            Query<Product> query = session.createQuery(FIND_BY_NAME_DESC_HQL);
             query.setParameter("productName", name);
-            return (List<Product>) query.list();
+            return query.list();
 
         } catch (HibernateException e) {
             System.err.println("findByName failed");
@@ -107,7 +107,7 @@ public class ProductDAO {
     public List<Product> findByPriceSortedDesc(int price, int delta){
         try (Session session = createSessionFactory().openSession()) {
 
-            Query query = session.createQuery(FIND_BY_PRICE_DESC_HQL);
+            Query<Product> query = session.createQuery(FIND_BY_PRICE_DESC_HQL);
             query.setParameter("priceFrom", price-delta);
             query.setParameter("priceTo", price+delta);
             return query.list();
