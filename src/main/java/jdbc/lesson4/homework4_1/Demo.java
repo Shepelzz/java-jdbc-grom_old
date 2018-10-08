@@ -22,8 +22,8 @@ public class Demo {
 //        controller.delete(storage, fileDAO.findById(65));
 //        controller.delete(storage, fileDAO.findById(66));
 
-        //controller.transferFile(storageDAO.findById(1), storageDAO.findById(2), 151);
+        controller.transferFile(storageDAO.findById(2), storageDAO.findById(1), 151);
 
-        controller.transferAll(storageDAO.findById(2), storageDAO.findById(1));
+        //controller.transferAll(storageDAO.findById(2), storageDAO.findById(1));
     }
 }

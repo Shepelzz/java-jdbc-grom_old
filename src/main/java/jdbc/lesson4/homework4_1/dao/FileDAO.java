@@ -21,83 +21,39 @@ public class FileDAO extends GeneralDAO{
     private static final String SQL_GET_ID = "SELECT FILE_ID_SEQ.NEXTVAL FROM DUAL";
     private static final String SQL_GET_FILES_BY_STORAGE_ID = "SELECT * FROM FILES WHERE STORAGE_ID = ?";
 
-    public File putFileIntoStorage(Storage storage, File file) throws InternalServerError, SQLException{
-        Connection conn = getConnection();
-        StorageDAO storageDAO = new StorageDAO();
-        File result;
-        try{
-            conn.setAutoCommit(false);
-
-            result = save(file, conn);
-            storageDAO.changeSize(storage.getId(), -file.getSize());
-
-            conn.commit();
+    public File put(Storage storage, File file) throws InternalServerError{
+        try(Connection conn = getConnection()){
+            return putFileIntoStorage(storage, file, conn);
         }catch (SQLException e){
-            conn.rollback();
-            throw e;
-        }finally {
-            closeConnection(conn);
-        }
-        return result;
-    }
-
-    public void deleteFileFromStorage(Storage storage, File file) throws InternalServerError, SQLException{
-        Connection conn = getConnection();
-        StorageDAO storageDAO = new StorageDAO();
-        try{
-            conn.setAutoCommit(false);
-
-            delete(file.getId(), conn);
-            storageDAO.changeSize(storage.getId(), file.getSize());
-
-            conn.commit();
-        }catch (SQLException e){
-            conn.rollback();
-            throw e;
-        }finally {
-            closeConnection(conn);
+            throw new InternalServerError(getClass().getName()+"-put. File id:"+file.getId()+" was not saved to Storage id: "+storage.getId()+". "+e.getMessage());
         }
     }
 
-    public void transferFiles(Storage storageFrom, Storage storageTo, long filesSize) throws InternalServerError, SQLException{
-        Connection conn = getConnection();
-        StorageDAO storageDAO = new StorageDAO();
-        try{
-            conn.setAutoCommit(false);
-
-            updateFilesByStorageId(storageFrom.getId(), storageTo.getId(), conn);
-            storageDAO.changeSize(storageFrom.getId(), filesSize);
-            storageDAO.changeSize(storageTo.getId(), -filesSize);
-
-            conn.commit();
+    public void delete(Storage storage, File file) throws InternalServerError{
+        try(Connection conn = getConnection()){
+            deleteFileFromStorage(storage, file, conn);
         }catch (SQLException e){
-            conn.rollback();
-            throw e;
-        }finally {
-            closeConnection(conn);
+            throw new InternalServerError(getClass().getName()+"-delete. File id:"+file.getId()+" was not delete from Storage id: "+storage.getId()+". "+e.getMessage());
         }
     }
 
-    public void transferFile(Storage storageFrom, Storage storageTo, File file) throws InternalServerError, SQLException{
-        Connection conn = getConnection();
-        StorageDAO storageDAO = new StorageDAO();
-        try{
-            conn.setAutoCommit(false);
-
-            update(file, conn);
-            storageDAO.changeSize(storageFrom.getId(), file.getSize());
-            storageDAO.changeSize(storageTo.getId(), -file.getSize());
-
-            conn.commit();
+    public void transferFiles(Storage storageFrom, Storage storageTo, long filesSize) throws InternalServerError{
+        try(Connection conn = getConnection()){
+            updateFilesByStorageId(storageFrom, storageTo, filesSize, conn);
         }catch (SQLException e){
-            conn.rollback();
-            throw e;
-        }finally {
-            closeConnection(conn);
+            throw new InternalServerError(getClass().getName()+"-transferFiles. Transfer fail from storage id:"+storageFrom.getId()+" to id:"+storageTo.getId()+". "+e.getMessage());
         }
     }
 
-    public File findById(long id) throws SQLException{
+    public void transferFile(Storage storageFrom, Storage storageTo, File file) throws InternalServerError{
+        try(Connection conn = getConnection()){
+            updateFile(storageFrom, storageTo, file, conn);
+        }catch (SQLException e){
+            throw new InternalServerError(getClass().getName()+"-transferFile. Transfer File id:"+file.getId()+" from storage id:"+storageFrom.getId()+" to id:"+storageTo.getId()+" failed. "+e.getMessage());
+        }
+    }
+
+    public File findById(long id) throws InternalServerError{
         try(Connection conn = getConnection(); PreparedStatement prpStmt = conn.prepareStatement(SQL_FIND_BY_ID)){
             prpStmt.setLong(1, id);
 
@@ -107,11 +63,11 @@ public class FileDAO extends GeneralDAO{
             }
             throw new BadRequestException(getClass().getName()+"-findById. There is no file with id "+id);
         }catch (SQLException e){
-            throw e;
+            throw new InternalServerError(getClass().getName()+"-findById. "+e.getMessage());
         }
     }
 
-    public List<File> getFilesByStorageId(long id) throws SQLException{
+    public List<File> getFilesByStorageId(long id) throws InternalServerError{
         try(Connection conn = getConnection(); PreparedStatement prStmt = conn.prepareStatement(SQL_GET_FILES_BY_STORAGE_ID)){
             prStmt.setLong(1, id);
             ResultSet rs = prStmt.executeQuery();
@@ -121,12 +77,15 @@ public class FileDAO extends GeneralDAO{
             }
             return files;
         }catch (SQLException e){
-            throw e;
+            throw new InternalServerError(getClass().getName()+"-getFilesByStorageId. "+e.getMessage());
         }
     }
 
-    private File save(File file, Connection conn) throws InternalServerError, SQLException{
+
+    private File putFileIntoStorage(Storage storage, File file, Connection conn) throws InternalServerError, SQLException{
         try(PreparedStatement prpStmt = conn.prepareStatement(SQL_SAVE)){
+            conn.setAutoCommit(false);
+
             file.setId(getNewEntityId(SQL_GET_ID));
 
             prpStmt.setLong(1, file.getId());
@@ -137,14 +96,61 @@ public class FileDAO extends GeneralDAO{
 
             if(prpStmt.executeUpdate() == 0)
                 throw new InternalServerError(getClass().getName()+"-save. File with id "+file.getId()+" was not saved");
+
+            StorageDAO storageDAO = new StorageDAO();
+            storageDAO.decreaseSize(storage.getId(), file.getSize(), conn);
+
+            conn.commit();
             return file;
         }catch (SQLException e){
+            conn.rollback();
             throw e;
         }
     }
 
-    private File update(File file, Connection conn) throws InternalServerError, SQLException{
+    private void deleteFileFromStorage(Storage storage, File file, Connection conn) throws InternalServerError, SQLException{
+        try(PreparedStatement prpStmt = conn.prepareStatement(SQL_DELETE)){
+            conn.setAutoCommit(false);
+
+            prpStmt.setLong(1, file.getId());
+            if(prpStmt.executeUpdate() == 0)
+                throw new InternalServerError(getClass().getName()+"-delete. File id:"+file.getId()+" was not deleted from Storage id:"+storage.getId());
+
+            StorageDAO storageDAO = new StorageDAO();
+            storageDAO.increaseSize(storage.getId(), file.getSize(), conn);
+
+            conn.commit();
+        }catch (SQLException e){
+            conn.rollback();
+            throw e;
+        }
+    }
+
+    private void updateFilesByStorageId(Storage storageFrom, Storage storageTo, long filesSize, Connection conn) throws InternalServerError, SQLException{
+        try(PreparedStatement prpStmt = conn.prepareStatement(SQL_UPDATE_BY_STORAGE_ID)){
+            conn.setAutoCommit(false);
+
+            prpStmt.setLong(1, storageTo.getId());
+            prpStmt.setLong(2, storageFrom.getId());
+
+            if(prpStmt.executeUpdate() == 0)
+                throw new InternalServerError(getClass().getName()+"-transferFiles. Transfer fail from storage id:"+storageFrom.getId()+" to id:"+storageTo.getId());
+
+            StorageDAO storageDAO = new StorageDAO();
+            storageDAO.increaseSize(storageFrom.getId(), filesSize, conn);
+            storageDAO.decreaseSize(storageTo.getId(), filesSize, conn);
+
+            conn.commit();
+        }catch (SQLException e){
+            conn.rollback();
+            throw e;
+        }
+    }
+
+    private void updateFile(Storage storageFrom, Storage storageTo, File file, Connection conn) throws InternalServerError, SQLException{
         try(PreparedStatement prpStmt = conn.prepareStatement(SQL_UPDATE)){
+            conn.setAutoCommit(false);
+
             prpStmt.setString(1, file.getName());
             prpStmt.setString(2, file.getFormat());
             prpStmt.setLong(3, file.getSize());
@@ -152,35 +158,19 @@ public class FileDAO extends GeneralDAO{
             prpStmt.setLong(5, file.getId());
 
             if(prpStmt.executeUpdate() == 0)
-                throw new InternalServerError(getClass().getName()+"-update. File with id "+file.getId()+" was not updated");
-            return file;
+                throw new InternalServerError(getClass().getName()+"-transferFile. Transfer File id:"+file.getId()+" from storage id:"+storageFrom.getId()+" to id:"+storageTo.getId()+" failed.");
+
+            StorageDAO storageDAO = new StorageDAO();
+            storageDAO.increaseSize(storageFrom.getId(), file.getSize(), conn);
+            storageDAO.decreaseSize(storageTo.getId(), -file.getSize(), conn);
+
+            conn.commit();
         }catch (SQLException e){
+            conn.rollback();
             throw e;
         }
     }
 
-    private void delete(long id, Connection conn) throws InternalServerError, SQLException{
-        try(PreparedStatement prpStmt = conn.prepareStatement(SQL_DELETE)){
-            prpStmt.setLong(1, id);
-            if(prpStmt.executeUpdate() == 0)
-                throw new InternalServerError(getClass().getName()+"-delete. Entity with id "+id+" was not deleted");
-        }catch (SQLException e){
-            throw e;
-        }
-    }
-
-    private void updateFilesByStorageId(long storageFromId, long storageToId, Connection conn) throws InternalServerError, SQLException{
-        try(PreparedStatement prpStmt = conn.prepareStatement(SQL_UPDATE_BY_STORAGE_ID)){
-            prpStmt.setLong(1, storageToId);
-            prpStmt.setLong(2, storageFromId);
-
-            if(prpStmt.executeUpdate() == 0)
-                throw new InternalServerError(getClass().getName()+"-updateFilesByStorageId. Update fail from storage id:"+storageFromId+" to id:"+storageToId);
-
-        }catch (SQLException e){
-            throw e;
-        }
-    }
 
     private File getFileFromResultSet(ResultSet rs) throws SQLException{
         File file = new File();
