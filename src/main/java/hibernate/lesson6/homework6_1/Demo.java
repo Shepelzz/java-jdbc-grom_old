@@ -1,7 +1,7 @@
 package hibernate.lesson6.homework6_1;
 
 public class Demo {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception{
         ProductDAO productDAO = new ProductDAO();
 
         //System.out.println(productDAO.findById(7));
